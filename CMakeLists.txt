@@ -1,11 +1,12 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.16)
 project(hello-physx-cmake LANGUAGES CXX)
 
 # Include the FetchContent module
 include(FetchContent)
 
 # DEBUG - if you want to use a local git repository instead of the remote github one, set this to your local checkout path:
-set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/marco/physx-cmake/PhysX")
+# WARNING: do NOT include the 'physx' subdirectory, just the root of the repository!!!
+set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/malesiani/PhysX")
 
 # Show download progress in the terminal, if you want
 set(FETCHCONTENT_QUIET OFF)
