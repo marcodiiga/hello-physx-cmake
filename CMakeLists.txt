@@ -1,21 +1,30 @@
+# Require minimum CMake version
 cmake_minimum_required(VERSION 3.28)
+
+# Define project name and languages
 project(hello-physx-cmake LANGUAGES CXX)
 
-# Include the FetchContent module
-include(FetchContent)
-include(GNUInstallDirs) # sets any install default dir correctly
+#########################################################
+# DEPENDENCIES SETUP
+#########################################################
 
-# DEBUG - if you want to use a local git repository instead of the remote github one, set this to your local checkout path:
-# WARNING: do NOT include the 'physx' subdirectory, just the root of the repository!!!
+# Include required CMake modules
+include(FetchContent)       # Module for downloading and configuring external dependencies
+include(GNUInstallDirs)     # Sets standard installation directories (bin, lib, etc.)
+
+# PhysX Source Configuration
+# If you want to use a local PhysX repository instead of downloading from GitHub,
+# set this variable to your local PhysX repository path (without the 'physx' subdirectory)
 set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "/home/alex/fetchcontent_physx/PhysX")
 
-# Show download progress in the terminal, if you want
+# Display download progress in the terminal (useful for larger dependencies)
 set(FETCHCONTENT_QUIET OFF)
 
-# Declare the external dependency
-# The name 'physx_lib' is how we'll refer to it in our project
-# Use GIT_REPOSITORY to specify the GitHub repository URL
-# Use GIT_TAG to specify a specific commit, tag, or branch
+# Declare the PhysX dependency using FetchContent
+# - physx_lib: Name used to refer to this dependency in our project
+# - GIT_REPOSITORY: Source repository URL
+# - GIT_TAG: Specific branch, tag, or commit to use
+# - SOURCE_SUBDIR: Subdirectory in the repository containing the main CMakeLists.txt
 FetchContent_Declare(
     physx_lib
     GIT_REPOSITORY https://github.com/marcodiiga/PhysX.git
@@ -23,64 +32,61 @@ FetchContent_Declare(
     SOURCE_SUBDIR  physx
 )
 
-# Add BEFORE FetchContent_MakeAvailable
-# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-# CMake 4.0+ no longer supports compatibility with < 3.5, so we need to set the policy version
+# Set minimum policy version for compatibility
+# This ensures consistent behavior with newer CMake versions
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
-# set(PHYSX_AS_SUBPROJECT ON)
-# Make the dependency available to our project
-# This automatically downloads the repository, configures it,
-# and makes its targets available to our project - it doesn't build PhysX yet!
+# Make PhysX available to our project
+# This downloads, configures, and makes PhysX targets available
 FetchContent_MakeAvailable(physx_lib)
 
-# Print out the source/binary directories for debugging
-message(STATUS "YEAH PhysX source directory: ${physx_lib_SOURCE_DIR}")
-message(STATUS "YEAH PhysX binary directory: ${physx_lib_BINARY_DIR}")
+# Log PhysX directories for debugging purposes
+message(STATUS "PhysX source directory: ${physx_lib_SOURCE_DIR}")
+message(STATUS "PhysX binary directory: ${physx_lib_BINARY_DIR}")
 
-# Create an executable for our application
+#########################################################
+# APPLICATION SETUP
+#########################################################
+
+# Create our application executable
 add_executable(hello-physx-cmake main.cpp)
 
-# Link our executable with the physx_lib library
-# This now includes all necessary dependencies (PhysX libraries, CUDA, PhysXGpu)!
-# Users no longer need to manually specify anything:
-# all include directories, compile definitions, and other properties are inherited automatically
+# Link our executable with PhysX
+# This automatically includes all necessary dependencies:
+# - All PhysX libraries
+# - Required include directories
+# - Compiler definitions
+# - Other properties from the PhysX targets
 target_link_libraries(hello-physx-cmake PRIVATE physx_lib)
 
-# 1. Retrieve the two binary output paths from the target’s INTERFACE_ properties
-get_target_property(_PHYSX_SRC_BIN physx_lib INTERFACE_PHYSX_SDK_SOURCE_BIN_DIR)
-get_target_property(_PHYSX_GPU_BIN physx_lib INTERFACE_PHYSX_SDK_GPU_SOURCE_BIN_DIR)
+#########################################################
+# INSTALLATION OF EXECUTABLE AND DEPENDENCIES
+#########################################################
 
-message(STATUS "PhysX core binaries in: ${_PHYSX_SRC_BIN}")
-message(STATUS "PhysX GPU binaries in: ${_PHYSX_GPU_BIN}")
-
-# Install executable with automatic dependency resolution
-# Also Automatically DETECT (modern cmake) and install through physx_lib ALL the PhysX
-# BINARY dependencies (not headers here!!!) and dependent libraries.
-# If I wanted to install the headers, I would have used find_package(PhysX REQUIRED)
-# and then used the PhysX::PhysX target.
-# Install all detected runtime dependencies (shared libraries)
-# TODO
-
-# at the very top, or right before your install() call
-message(STATUS "CMake version: ${CMAKE_VERSION}")
-message(STATUS "Major: ${CMAKE_MAJOR_VERSION}, Minor: ${CMAKE_MINOR_VERSION}, Patch: ${CMAKE_PATCH_VERSION}")
-
-# Tell the installed EXE to look for its .so files in ../lib
-# relative to itself.
+# Configure runtime path for the executable
+# This ensures the executable can find its shared libraries at runtime
 set_target_properties(hello-physx-cmake PROPERTIES
+  # $ORIGIN refers to the executable's location (Linux specific)
+  # This sets the runtime search path to look in ../lib relative to the executable
   INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
-  BUILD_WITH_INSTALL_RPATH OFF    # don't use install RPATH during build
-  SKIP_BUILD_RPATH        ON     # strip RPATH from the build‐tree EXE
+
+  # Don't use install RPATH during the build phase
+  BUILD_WITH_INSTALL_RPATH OFF
+
+  # Remove build directory paths from the binary
+  SKIP_BUILD_RPATH        ON
 )
 
+# Install our executable and its dependencies
 install(TARGETS hello-physx-cmake
+  # Configure automatic dependency resolution
   RUNTIME_DEPENDENCIES
+    # Exclude system libraries to avoid unnecessary copying
     PRE_EXCLUDE_REGEXES
-      [[libc\.so\..*]]
-      [[libstdc\+\+\.so\..*]]
+      [[libc\.so\..*]]          # Standard C library
+      [[libstdc\+\+\.so\..*]]   # C++ standard library
+
+    # Specify directories to search for dependencies
     DIRECTORIES
       $<TARGET_FILE_DIR:PhysX>
       $<TARGET_FILE_DIR:PhysXGpu>
@@ -89,6 +95,8 @@ install(TARGETS hello-physx-cmake
       $<TARGET_FILE_DIR:PhysXCooking>
       $<TARGET_FILE_DIR:PhysXExtensions>
       $<TARGET_FILE_DIR:PhysXFoundation>
-  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+
+  # Set installation destinations
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"   # For executables
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"   # For shared libraries
 )
