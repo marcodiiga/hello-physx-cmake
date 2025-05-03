@@ -82,6 +82,19 @@ set_target_properties(hello-physx-cmake PROPERTIES
   #  SKIP_BUILD_RPATH        ON
 )
 
+if (WIN32)
+  # After building hello-physx-cmake, copy all its runtime DLLs next to the EXE.
+  # This is useful for windows (since there's no rpath) to find the DLLs at runtime
+  add_custom_command(TARGET hello-physx-cmake
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      $<TARGET_RUNTIME_DLLS:hello-physx-cmake>
+      $<TARGET_FILE_DIR:hello-physx-cmake>
+    # ensure the generator expression list is expanded
+    COMMAND_EXPAND_LISTS
+  )
+endif()
+
 # Install our executable and its dependencies
 install(TARGETS hello-physx-cmake
   # Configure automatic dependency resolution
