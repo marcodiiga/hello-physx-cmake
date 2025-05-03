@@ -15,14 +15,14 @@ include(GNUInstallDirs)     # Sets standard installation directories (bin, lib, 
 # PhysX Source Configuration
 # If you want to use a local PhysX repository instead of downloading from GitHub,
 # set this variable to your local PhysX repository path (without the 'physx' subdirectory)
-set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/malesiani/PhysX")
+if(WIN32)
+  set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/malesiani/PhysX")
+else()
+  set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "/home/alex/fetchcontent_physx/PhysX")
+endif()
 
 # Display download progress in the terminal (useful for larger dependencies)
 set(FETCHCONTENT_QUIET OFF)
-
-# force PhysX to output libs into your build folder instead of its own source folder
-set(PX_OUTPUT_LIB_DIR "${CMAKE_BINARY_DIR}/physx" CACHE PATH "" FORCE)
-set(PX_OUTPUT_BIN_DIR "${CMAKE_BINARY_DIR}/physx" CACHE PATH "" FORCE)
 
 # Declare the PhysX dependency using FetchContent
 # - physx_lib: Name used to refer to this dependency in our project
