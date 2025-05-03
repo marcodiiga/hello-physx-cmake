@@ -15,7 +15,11 @@ include(GNUInstallDirs)     # Sets standard installation directories (bin, lib, 
 # PhysX Source Configuration
 # If you want to use a local PhysX repository instead of downloading from GitHub,
 # set this variable to your local PhysX repository path (without the 'physx' subdirectory)
-set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/malesiani/PhysX")
+if(WIN32)
+  set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/malesiani/PhysX")
+else()
+  set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "/home/alex/fetchcontent_physx/PhysX")
+endif()
 
 # Display download progress in the terminal (useful for larger dependencies)
 set(FETCHCONTENT_QUIET OFF)
