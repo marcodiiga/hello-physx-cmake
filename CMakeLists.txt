@@ -24,10 +24,6 @@ endif()
 # Display download progress in the terminal (useful for larger dependencies)
 set(FETCHCONTENT_QUIET OFF)
 
-# force PhysX to output libs into your build folder instead of its own source folder
-set(PX_OUTPUT_LIB_DIR "${CMAKE_BINARY_DIR}/physx" CACHE PATH "" FORCE)
-set(PX_OUTPUT_BIN_DIR "${CMAKE_BINARY_DIR}/physx" CACHE PATH "" FORCE)
-
 # Declare the PhysX dependency using FetchContent
 # - physx_lib: Name used to refer to this dependency in our project
 # - GIT_REPOSITORY: Source repository URL
