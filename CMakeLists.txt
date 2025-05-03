@@ -103,6 +103,9 @@ install(TARGETS hello-physx-cmake
     PRE_EXCLUDE_REGEXES
       [[libc\.so\..*]]          # Standard C library
       [[libstdc\+\+\.so\..*]]   # C++ standard library
+      [[.*_static_64\.lib]]      # Static libraries
+      [[.*_static\..*]]          # Static libraries (alternative naming)
+      [[.*\.lib$]]          # strip out any .lib files
 
     # Specify directories to search for dependencies
     DIRECTORIES
@@ -117,4 +120,5 @@ install(TARGETS hello-physx-cmake
   # Set installation destinations
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"   # For executables
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"   # For shared libraries
+  ARCHIVE DESTINATION ""
 )
