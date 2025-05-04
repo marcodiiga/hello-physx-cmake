@@ -106,15 +106,17 @@ install(TARGETS hello-physx-cmake
       [[.*_static_64\.lib]]      # Static libraries
       [[.*_static\..*]]          # Static libraries (alternative naming)
       [[.*\.lib$]]          # strip out any .lib files
+      [[.*\.a$]]   # Exclude all static libraries
 
     # Specify directories to search for dependencies
     DIRECTORIES
       $<TARGET_FILE_DIR:PhysX>
       $<TARGET_FILE_DIR:PhysXGpu>
-      $<TARGET_FILE_DIR:PhysXCharacterKinematic>
+      # These are currently always static
+      # $<TARGET_FILE_DIR:PhysXCharacterKinematic>
+      # $<TARGET_FILE_DIR:PhysXExtensions>
       $<TARGET_FILE_DIR:PhysXCommon>
       $<TARGET_FILE_DIR:PhysXCooking>
-      $<TARGET_FILE_DIR:PhysXExtensions>
       $<TARGET_FILE_DIR:PhysXFoundation>
 
   # Set installation destinations
