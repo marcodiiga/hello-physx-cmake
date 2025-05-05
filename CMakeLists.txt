@@ -1,4 +1,4 @@
-# Require minimum CMake version
+# Required minimum CMake version
 cmake_minimum_required(VERSION 3.28)
 
 # Define project name and languages
@@ -12,14 +12,15 @@ project(hello-physx-cmake LANGUAGES CXX)
 include(FetchContent)       # Module for downloading and configuring external dependencies
 include(GNUInstallDirs)     # Sets standard installation directories (bin, lib, etc.)
 
-# PhysX Source Configuration
+# <DEBUG>
 # If you want to use a local PhysX repository instead of downloading from GitHub,
 # set this variable to your local PhysX repository path (without the 'physx' subdirectory)
-if(WIN32)
-  set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/malesiani/PhysX")
-else()
-  set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "/home/alex/fetchcontent_physx/PhysX")
-endif()
+# if(WIN32)
+#   set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "C:/Users/malesiani/PhysX")
+# else()
+#   set(FETCHCONTENT_SOURCE_DIR_PHYSX_LIB "/home/alex/fetchcontent_physx/PhysX")
+# endif()
+# </DEBUG>
 
 # Display download progress in the terminal (useful for larger dependencies)
 set(FETCHCONTENT_QUIET OFF)
@@ -39,6 +40,10 @@ FetchContent_Declare(
 # Set minimum policy version for compatibility
 # This ensures consistent behavior with newer CMake versions
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+# You can also set additional cmake options here for PhysX before the MakeAvailable call
+# where PhysX is configured.
+# set(PX_GENERATE_STATIC_LIBRARIES ON)
+# set(PX_GENERATE_GPU_STATIC_LIBRARIES ON)
 
 # Make PhysX available to our project
 # This downloads, configures, and makes PhysX targets available
@@ -55,7 +60,7 @@ message(STATUS "PhysX binary directory: ${physx_lib_BINARY_DIR}")
 # Create our application executable
 add_executable(hello-physx-cmake main.cpp)
 
-# Link our executable with PhysX
+# Link our executable with PhysX - the modern CMake way
 # This automatically includes all necessary dependencies:
 # - All PhysX libraries
 # - Required include directories
@@ -78,12 +83,12 @@ set_target_properties(hello-physx-cmake PROPERTIES
   BUILD_WITH_INSTALL_RPATH OFF
 
   # Remove build directory paths from the binary, activate this if you just want
-  # to install it and not test it from the build folder
+  # to install your app and not test it from the build folder
   #  SKIP_BUILD_RPATH        ON
 )
 
-if (WIN32)
-  # After building hello-physx-cmake, copy all its runtime DLLs next to the EXE.
+if (WIN32) # Optional
+  # After building hello-physx-cmake, copy all its runtime DLLs next to the EXE in the build folder.
   # This is useful for windows (since there's no rpath) to find the DLLs at runtime
   add_custom_command(TARGET hello-physx-cmake
     POST_BUILD
@@ -95,7 +100,7 @@ if (WIN32)
   )
 endif()
 
-# Install our executable and its dependencies
+# Optional: install our executable and its dependencies
 install(TARGETS hello-physx-cmake
   # Configure automatic dependency resolution
   RUNTIME_DEPENDENCIES
